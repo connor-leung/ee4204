@@ -1,0 +1,6 @@
+#include "headsock.h"
+
+float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *total_bytes);
+void tv_sub(struct timeval *out, struct timeval *in);
+
+int main(int argc, char *argv[

@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
 
 void str_ser(int sockfd, float error_prob, int file_id)
 {   
-    char buffer[BUFSIZE];
     FILE *fp;
     char recvs[DATALEN];
     struct sockaddr_in cli_addr;
@@ -56,7 +55,7 @@ void str_ser(int sockfd, float error_prob, int file_id)
     long total_bytes = 0;
     struct timeval start, end;
 
-    sprintf(recvs, "payload%d.txt", file_id);
+    sprintf(recvs, "payload/payload%d.txt", file_id);
     
     fp = fopen(recvs, "w");
     if (fp == NULL) {
@@ -88,13 +87,16 @@ void str_ser(int sockfd, float error_prob, int file_id)
 
             ack.num = expected_seq;
             ack.len = 2;
+            ack.type = 0;
             sendto(sockfd, &ack, sizeof(ack), 0, (struct sockaddr *)&cli_addr, cli_len);
 
             expected_seq = 1 - expected_seq;
         } else {
             // resend last ACK
-            ack.num = 1 - expected_seq;
-            ack.len = 2;
+
+            ack.num = packet.num; 
+            ack.len = 2;           
+            ack.type = 1;
             sendto(sockfd, &ack, sizeof(ack), 0, (struct sockaddr *)&cli_addr, cli_len);
         }
 
@@ -110,6 +112,6 @@ void str_ser(int sockfd, float error_prob, int file_id)
     printf("File received: %ld bytes -> %s\n", total_bytes, recvs);
     printf("Transfer time: %.2f ms\n", duration);
     printf("Throughput: %.2f bytes/ms\n", throughput);
-
+    
     fclose(fp);
 }

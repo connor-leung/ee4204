@@ -14,14 +14,19 @@ int main(int argc, char *argv[])
     long total_bytes;
     char **pptr;
 
-    if (argc != 2)
+    if (argc != 3)
     {
-        printf("Usage: %s <server_ip>\n", argv[0]);
+        printf("Usage: %s <server_ip> <file_path>\n", argv[0]);
         exit(0);
     }
 
 	if ((sh=gethostbyname(argv[1]))==NULL) {             //get host's information
         printf("error when gethostbyname\n");
+        exit(0);
+    }
+
+    if (argv[2] == NULL) {             //get file information
+        printf("error when getting file\n");
         exit(0);
     }
 
@@ -35,4 +40,17 @@ int main(int argc, char *argv[])
     addrs = (struct in_addr **)sh->h_addr_list;
     printf("canonical name: %s\n", sh->h_name);
 	for (pptr=sh->h_aliases; *pptr != NULL; pptr++)
-		printf("the aliases name is: %s\n", *pptr);			//printf soc
+		printf("the aliases name is: %s\n", *pptr);			//printf socket information
+	switch(sh->h_addrtype)
+	{
+		case AF_INET:
+			printf("AF_INET\n");
+		break;
+		default:
+			printf("unknown addrtype\n");
+		break;
+	}
+
+    ser_addr.sin_family = AF_INET;
+    ser_addr.sin_port = htons(MYUDP_PORT);
+    memcpy(&(ser_addr.sin_addr

@@ -19,4 +19,13 @@ int main(int argc, char *argv[])
         printf("Usage: %s <server_ip>\n", argv[0]);
         exit(0);
     }
-    if ((sh=
+
+	if ((sh=gethostbyname(argv[1]))==NULL) {             //get host's information
+        printf("error when gethostbyname\n");
+        exit(0);
+    }
+
+	sockfd = socket(AF_INET, SOCK_DGRAM, 0);             //create socket
+    if (sockfd < 0)
+    {
+        printf("

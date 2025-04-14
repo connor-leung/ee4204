@@ -14,14 +14,19 @@ int main(int argc, char *argv[])
     long total_bytes;
     char **pptr;
 
-    if (argc != 2)
+    if (argc != 3)
     {
-        printf("Usage: %s <server_ip>\n", argv[0]);
+        printf("Usage: %s <server_ip> <file_path>\n", argv[0]);
         exit(0);
     }
 
 	if ((sh=gethostbyname(argv[1]))==NULL) {             //get host's information
         printf("error when gethostbyname\n");
+        exit(0);
+    }
+
+    if (argv[2] == NULL) {             //get file information
+        printf("error when getting file\n");
         exit(0);
     }
 
@@ -51,7 +56,7 @@ int main(int argc, char *argv[])
     memcpy(&(ser_addr.sin_addr.s_addr), *addrs, sizeof(struct in_addr));
     bzero(&(ser_addr.sin_zero), 8);
 
-    fp = fopen("myfile.txt", "r");
+    fp = fopen(argv[2], "r");
     if (fp == NULL)
     {
         printf("File not found\n");
@@ -117,16 +122,21 @@ float str_cli(FILE *fp, int sockfd, struct sockaddr *addr, int addrlen, long *to
 
         sendto(sockfd, &packet, sizeof(packet), 0, addr, addrlen); //send first packet
 
-        while (1)
-        {
-            int n = recvfrom(sockfd, &ack, sizeof(ack), 0, NULL, NULL);
-            if (n > 0 && ack.num == seq)
-            {
-                seq = 1 - seq;
-                ci += chunk;
-                break;
-            }
+        while (1) {
             sendto(sockfd, &packet, sizeof(packet), 0, addr, addrlen);
+            printf("Sent packet %d\n", seq);
+        
+            int n = recvfrom(sockfd, &ack, sizeof(ack), 0, NULL, NULL);
+            if (n > 0) {
+                if (ack.type == 0 && ack.num == seq) {
+                    printf("Received ACK for packet %d, len %d\n", ack.num, ack.len);
+                    ci += chunk;
+                    seq = 1 - seq;
+                    break;
+                } else if (ack.type == 1) {
+                    printf("Received NAK for packet %d, len %d. Resending...\n", ack.num, ack.len);
+                }
+            }
         }
     }
 
